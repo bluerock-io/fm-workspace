@@ -23,13 +23,19 @@
 (setq-default coq-prog-args nil)
 
 (defun coqdev-setup-proofgeneral ()
-  "Setup Proofgeneral variables for Coq development.
+  "Setup ProofGeneral variables for Coq development and build coqtop.
 
 Note that this function is executed before _CoqProject is read if it exists."
   (let ((dir (workspace-directory)))
     (when dir
-     (setq-local coq-prog-name
-      (concat dir "_build/default/fmdeps/coq/dev/shim/coqtop")))))
+      ;; Use dir as the current directory for the dune build command.
+      (let ((default-directory (file-name-as-directory dir)))
+        (call-process "dune" nil nil nil
+                      "build" "_build/default/fmdeps/coq/dev/shim/coqtop"))
+      (setq-local coq-prog-name
+                  (concat (file-name-as-directory dir)
+                          "_build/default/fmdeps/coq/dev/shim/coqtop")))))
+
 (add-hook 'hack-local-variables-hook #'coqdev-setup-proofgeneral)
 
 (provide 'fmdev)
